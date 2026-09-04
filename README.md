@@ -66,6 +66,6 @@ curl "http://localhost:3001/api/geocode?logradouro=Avenida+Paulista&cidade=São+
 
 ## 🛠️ Tecnologias
 
-- **Frontend:** React 18, Vite 6, Leaflet 1.9, CSS moderno (custom properties, `color-mix`)
+- **Frontend:** React 18, Vite 6, Leaflet 1.9, CSS moderno (custom properties, `clamp`, `min/max/calc`, `color-mix`, `conic-gradient`, grid `repeat/auto-fit/minmax`, `counter`, `env`…)
 - **Backend:** Node.js (ES Modules), Express 4, fetch nativo
 - **Dados:** [ViaCEP](https://viacep.com.br) e [Nominatim/OpenStreetMap](https://nominatim.org) (gratuitos, sem chave de API)

@@ -14,6 +14,8 @@
   --accent: #4f46e5;
   --accent-strong: #4338ca;
   --accent-soft: rgba(79, 70, 229, 0.13);
+  /* Função: hsl() — matiz/saturação/luminosidade com alfa moderno */
+  --accent-glow: hsl(243 75% 59% / 0.35);
   --danger: #d92d20;
   --success: #039855;
   --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
@@ -35,6 +37,7 @@
   --accent: #818cf8;
   --accent-strong: #6366f1;
   --accent-soft: rgba(129, 140, 248, 0.18);
+  --accent-glow: hsl(234 89% 74% / 0.4);
   --danger: #f97066;
   --success: #32d583;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
@@ -87,9 +90,11 @@ input {
 /* ---------------- Layout geral ---------------- */
 
 .app {
-  max-width: 640px;
+  /* Função: min() — nunca passa de 640px, mas encolhe em telas pequenas */
+  max-width: min(640px, 100%);
   margin: 0 auto;
-  padding: 28px 20px 40px;
+  /* Funções: clamp(), calc() e env() — respiro lateral fluido + safe-area */
+  padding: 28px clamp(14px, 4vw, 20px) calc(40px + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -128,7 +133,8 @@ input {
 }
 
 .app__brand h1 {
-  font-size: 1.22rem;
+  /* Função: clamp() — tipografia fluida entre 1.08rem e 1.32rem */
+  font-size: clamp(1.08rem, 1rem + 0.9vw, 1.32rem);
   letter-spacing: -0.02em;
 }
 
@@ -192,6 +198,11 @@ input {
   transform: scale(0.92);
 }
 
+/* Função: steps() — giro "engrenagem" do ícone ao passar o mouse */
+.theme-toggle:hover .theme-toggle__icone.visivel {
+  animation: girar 0.7s steps(8) both;
+}
+
 .theme-toggle__icone {
   position: absolute;
   inset: 0;
@@ -231,7 +242,8 @@ input {
 
 .search.is-focado {
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px var(--accent-soft), var(--shadow-sm);
+  /* Função: hsl() aplicada através do token --accent-glow */
+  box-shadow: 0 0 0 4px var(--accent-glow), var(--shadow-sm);
 }
 
 .search__icone {
@@ -250,7 +262,7 @@ input {
   border: none;
   outline: none;
   background: transparent;
-  font-size: 1.05rem;
+  font-size: clamp(1rem, 0.95rem + 0.5vw, 1.12rem); /* Função: clamp() */
   letter-spacing: 0.04em;
   font-variant-numeric: tabular-nums;
 }
@@ -284,7 +296,7 @@ input {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 11px 22px;
+  padding: 11px clamp(16px, 1rem + 1.6vw, 26px); /* Função: clamp() */
   border-radius: 999px;
   background: linear-gradient(135deg, var(--accent), var(--accent-strong));
   color: #fff;
@@ -375,8 +387,11 @@ input {
 .spinner--grande {
   width: 38px;
   height: 38px;
-  border: 3px solid var(--accent-soft);
-  border-top-color: var(--accent);
+  border: none;
+  /* Funções: conic-gradient(), radial-gradient() e calc() no recorte (mask) */
+  background: conic-gradient(from 0deg, var(--accent), transparent 75%);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3.5px), #000 0);
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3.5px), #000 0);
 }
 
 /* ---------------- Sugestões e chips ---------------- */
@@ -404,11 +419,12 @@ input {
   box-shadow: var(--shadow-sm);
   transition: transform var(--transicao), border-color var(--transicao),
     color var(--transicao), background-color var(--transicao);
-  animation: fadeUp 0.4s ease both;
+  animation: fadeUp 0.4s ease backwards; /* 'backwards' libera o transform p/ hover */
 }
 
 .chip:hover {
-  transform: translateY(-2px);
+  /* Funções: perspective() e rotate3d() — leve inclinação 3D */
+  transform: translateY(-2px) perspective(300px) rotate3d(1, 0, 0, 8deg);
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -440,7 +456,8 @@ input {
 }
 
 .card__titulo {
-  font-size: 1.12rem;
+  /* Função: var() com valor de reserva (fallback) dentro de clamp() */
+  font-size: clamp(1.02rem, var(--titulo-liquido, 1rem + 0.8vw), 1.38rem);
   letter-spacing: -0.01em;
   line-height: 1.3;
 }
@@ -576,9 +593,34 @@ input {
 }
 
 .historico__chips {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  /* Funções: repeat(), auto-fit, minmax() e min() — grade adaptável sem media query */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
   gap: 8px;
+  counter-reset: busca; /* prepara a Função: counter() */
+}
+
+/* Numera automaticamente os chips do histórico (counter + content) */
+.historico__chips .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+
+.historico__chips .chip::before {
+  counter-increment: busca;
+  content: counter(busca, decimal-leading-zero); /* Função: counter() */
+  flex-shrink: 0;
+  min-width: 26px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
 }
 
 /* ---------------- Modal do mapa ---------------- */
@@ -590,14 +632,15 @@ input {
   display: grid;
   place-items: center;
   padding: 20px;
-  background: rgba(8, 11, 20, 0.55);
+  background: rgb(8 11 20 / 55%); /* Função: rgb() com alfa moderno */
   backdrop-filter: blur(7px);
   animation: aparecer 0.25s ease both;
 }
 
 .modal {
   width: min(860px, 100%);
-  height: min(580px, 80vh);
+  /* Funções: min() + max() — altura entre 420px e 80vh, com teto de 580px */
+  height: min(580px, max(420px, 80vh));
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -702,7 +745,8 @@ input {
 .toast {
   position: fixed;
   left: 50%;
-  bottom: 28px;
+  /* Funções: max() + env() — nunca sobe demais e respeita a safe-area */
+  bottom: max(28px, env(safe-area-inset-bottom, 0px));
   z-index: 1100;
   max-width: min(420px, calc(100vw - 40px));
   padding: 12px 20px;
@@ -839,7 +883,7 @@ input {
 
 @media (max-width: 560px) {
   .app {
-    padding: 20px 14px 30px;
+    padding: 20px 14px calc(30px + env(safe-area-inset-bottom, 0px));
   }
 
   .search {
@@ -887,6 +931,22 @@ input {
   font: inherit;
   background: var(--surface-2);
 }
+
+/* ================================================================
+   ÍNDICE DAS FUNÇÕES CSS USADAS NO PROJETO
+   ----------------------------------------------------------------
+   Matemática/fluidez ..... calc(), min(), max(), clamp(), env()
+   Cores .................. rgb(), hsl(), color-mix(), linear-gradient(),
+                            radial-gradient(), conic-gradient()
+   Variáveis .............. var() (com e sem valor de reserva/fallback)
+   Grade (Grid) ........... repeat(), minmax(), auto-fit
+   Contadores ............. counter() + counter-reset/counter-increment
+   Tempo/interpolação ..... cubic-bezier(), steps()
+   Transformações ......... translate(), translateX/Y(), scale(), rotate(),
+                            rotate3d(), perspective()
+   Filtros/efeitos ........ brightness(), saturate(), blur()
+   Conteúdo gerado ........ counter(), radial-gradient() em mask
+================================================================ */
 
 
 

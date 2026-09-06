@@ -293,7 +293,7 @@ export default function App() {
     [origem, resultado],
   )
 
-  /* Restaura la app al estado inicial (nueva búsqueda) tras una búsqueda */
+  /* Restaura o app ao estado inicial (nova busca) após uma busca */
   const restaurarBusqueda = useCallback(() => {
     setCep('')
     setResultado(null)
@@ -313,7 +313,7 @@ export default function App() {
       meta: { origemRotulo: '', destinoRotulo: '' },
       viagens: { modos: [], distanciaViaKm: 0, interestadual: false },
     })
-    notificar('¡Listo para una nueva búsqueda! ✈️', 'info')
+    notificar('Pronto para uma nova busca! ✈️', 'info')
     inputRef.current?.focus()
   }, [notificar])
 
@@ -344,7 +344,7 @@ export default function App() {
           </span>
           <div>
             <h1>Buscador de CEP</h1>
-            <p>Del CEP a tu destino: ônibus municipal, metrò, tren y avión 🛫</p>
+            <p>Do CEP ao seu destino: ônibus municipal, metrô, trem e avião 🛫</p>
           </div>
         </div>
         <ThemeToggle tema={tema} onToggle={alternarTema} />
@@ -376,7 +376,7 @@ export default function App() {
         )}
 
         {status === 'idle' && !resultado && (
-          <section className="hero-viaje" aria-label="Tu viaje empieza aquí">
+          <section className="hero-viaje" aria-label="Sua viagem começa aqui">
             <div className="hero-viaje__cielo" aria-hidden="true">
               <span className="hero-sol" />
               <span className="hero-nube hero-nube--1" />
@@ -385,13 +385,13 @@ export default function App() {
               <span className="hero-avion">✈️</span>
             </div>
             <div className="hero-viaje__contenido">
-              <h2 className="hero-viaje__titulo">Tu viaje empieza con un CEP 📍</h2>
+              <h2 className="hero-viaje__titulo">Sua viagem começa com um CEP 📍</h2>
               <p className="hero-viaje__texto">
-                Escribe el <strong>CEP de tu destino</strong> y te mostraremos cómo llegar
-                en <strong>ônibus municipal o intermunicipal</strong> (con número y nombre de
-                línea), <strong>metrò o tren</strong> (estación, línea y baldeaciones) — y para
-                distancias largas, <strong>avión o carretera</strong> con enlaces reales de
-                compra en ClickBus, Buser, Google Flights y Skyscanner.
+                Digite o <strong>CEP do seu destino</strong> e mostraremos como chegar
+                em <strong>ônibus municipal ou intermunicipal</strong> (com número e nome
+                da linha), <strong>metrô ou trem</strong> (estação, linha e baldeações) — e
+                para distâncias longas, <strong>avião ou estrada</strong> com links reais de
+                compra na ClickBus, Buser, Google Flights e Skyscanner.
               </p>
               <div className="hero-pasos" aria-hidden="true">
                 <span className="hero-paso">🔍 CEP</span>
@@ -475,8 +475,8 @@ export default function App() {
       </main>
 
       <footer className="app__footer">
-        Datos: <strong>ViaCEP</strong> · Mapas: <strong>OpenStreetMap</strong> · Rutas:{' '}
-        <strong>OSRM</strong> · Pasajes reales: <strong>Amadeus</strong> · Compra:{' '}
+        Dados: <strong>ViaCEP</strong> · Mapas: <strong>OpenStreetMap</strong> · Rotas:{' '}
+        <strong>OSRM</strong> · Passagens reais: <strong>Amadeus</strong> · Compra:{' '}
         <strong>ClickBus · Buser · Google Flights · Skyscanner</strong>
       </footer>
 

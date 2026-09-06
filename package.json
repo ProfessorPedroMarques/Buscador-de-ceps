@@ -1,15 +1,16 @@
 {
   "name": "buscador-de-cep",
   "private": true,
-  "version": "2.0.0",
+  "version": "2.2.0",
   "type": "module",
-  "description": "Consulte endereços brasileiros por CEP e visualize no mapa",
+  "description": "Consulte endereços por CEP e descubra rotas urbanas, rodoviárias, voos e viagens de carro a partir da sua localização (estilo Moovit)",
   "scripts": {
     "dev": "concurrently -k -n server,client -c blue,magenta \"npm:dev:server\" \"npm:dev:client\"",
     "dev:server": "node server/index.js",
     "dev:client": "vite",
     "build": "vite build",
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "teste:planejador": "node scripts/teste-planejador.mjs"
   },
   "dependencies": {
     "cors": "^2.8.5",

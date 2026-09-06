@@ -8,7 +8,14 @@ const Linha = ({ rotulo, valor, destaque, atraso }) => (
   </div>
 )
 
-export default function ResultCard({ data, onCopiar, onVerMapa }) {
+export default function ResultCard({
+  data,
+  onCopiar,
+  onVerMapa,
+  onComoChegar,
+  onRestaurar,
+  planejandoRota,
+}) {
   return (
     <section className="card" aria-label="Endereço encontrado">
       <header className="card__topo">
@@ -35,13 +42,47 @@ export default function ResultCard({ data, onCopiar, onVerMapa }) {
           </svg>
           Copiar endereço
         </button>
-        <button type="button" className="btn btn--primario" onClick={onVerMapa}>
+        <button type="button" className="btn btn--secundario" onClick={onVerMapa}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="17" height="17" aria-hidden="true">
             <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
             <circle cx="12" cy="10" r="3" />
           </svg>
           Ver no mapa
         </button>
+        <button
+          type="button"
+          className="btn btn--onibus"
+          onClick={onComoChegar}
+          disabled={planejandoRota}
+          title="Usa sua localização para sugerir a melhor rota de ônibus"
+        >
+          {planejandoRota ? (
+            <>
+              <span className="spinner" aria-hidden="true" />
+              Planejando…
+            </>
+          ) : (
+            <>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="17" height="17" aria-hidden="true">
+                <path d="M8 6v6M15 6v6M2 12h19.6M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.6 6.8 19.7 6 18.6 6H4a2 2 0 0 0-2 2v10h3" />
+                <circle cx="7" cy="18" r="2" />
+                <path d="M9 18h5" />
+                <circle cx="16" cy="18" r="2" />
+              </svg>
+              Como chegar
+            </>
+          )}
+        </button>
+        {onRestaurar && (
+          <button
+            type="button"
+            className="btn btn--restaurar"
+            onClick={onRestaurar}
+            title="Limpiar el resultado y comenzar una nueva búsqueda"
+          >
+            ↺ Restaurar
+          </button>
+        )}
       </div>
     </section>
   )

@@ -8,22 +8,22 @@
     />
     <meta
       name="description"
-      content="Consulte endereços brasileiros por CEP e visualize no mapa."
+      content="Do CEP ao destino: endereços no mapa e a melhor rota de ônibus municipal, metrò, trem, avião ou carro — com links reais de compra de passagens."
     />
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#eef1f7" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b0f1a" />
-    <meta property="og:title" content="Buscador de CEP" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#e7f3ff" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b1220" />
+    <meta property="og:title" content="Buscador de CEP — Sua viagem começa aqui" />
     <meta
       property="og:description"
-      content="Digite o CEP e localize o endereço no mapa."
+      content="Digite o CEP, veja o endereço no mapa e descubra a rota ideal: ônibus, metrò, trem, avião ou carro, com passagens reais."
     />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="pt_BR" />
     <link
       rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%AE%3C/text%3E%3C/svg%3E"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%AB%3C/text%3E%3C/svg%3E"
     />
-    <title>Buscador de CEP</title>
+    <title>Buscador de CEP — Sua viagem começa aqui ✈️</title>
 
     <script>
       /* Aplica o tema salvo (ou o do sistema) ANTES da primeira pintura,
@@ -59,26 +59,26 @@
         background:
           radial-gradient(
             900px 480px at 88% -12%,
-            rgb(79 70 229 / 0.09),
+            rgb(3 105 161 / 0.09),
             transparent 60%
           ),
-          #eef1f7;
+          #e7f3ff;
       }
       html[data-theme='dark'] #root:empty {
         background:
           radial-gradient(
             900px 480px at 88% -12%,
-            rgb(129 140 248 / 0.08),
+            rgb(56 189 248 / 0.09),
             transparent 60%
           ),
-          #0b0f1a;
+          #0b1220;
       }
       #root:empty::before {
         content: '';
         width: min(42px, 12vw);
         aspect-ratio: 1;
         border-radius: 50%;
-        background: conic-gradient(from 0deg, hsl(243 75% 59%), transparent 70%);
+        background: conic-gradient(from 0deg, hsl(204 97% 48%), transparent 70%);
         -webkit-mask: radial-gradient(
           farthest-side,
           transparent calc(100% - 4px),
@@ -88,7 +88,7 @@
         animation: girar 0.8s linear infinite;
       }
       html[data-theme='dark'] #root:empty::before {
-        background: conic-gradient(from 0deg, hsl(234 89% 74%), transparent 70%);
+        background: conic-gradient(from 0deg, hsl(199 93% 59%), transparent 70%);
       }
       @keyframes girar {
         to {
@@ -142,25 +142,6 @@
   <body>
     <div id="root"></div>
     <noscript> Ative o JavaScript para usar o Buscador de CEP. 📮 </noscript>
-    <script>
-      /* Se o React não montar em 10 segundos, substitui o carregamento
-         infinito por uma mensagem clara com o que fazer. */
-      setTimeout(function () {
-        var raiz = document.getElementById('root')
-        if (raiz && raiz.children.length === 0) {
-          raiz.innerHTML =
-            '<div class="boot-erro" role="alert">' +
-            '<h2>A página não terminou de carregar 😕</h2>' +
-            '<p>O servidor de desenvolvimento não está respondendo. Tente:</p>' +
-            '<ul>' +
-            '<li>No terminal, rode <code>npm install</code> (apenas na primeira vez) e depois <code>npm run dev</code>.</li>' +
-            '<li>Abra <a href="http://localhost:5173">http://localhost:5173</a> no navegador.</li>' +
-            '<li>Verifique se apareceu algum erro no terminal.</li>' +
-            '</ul>' +
-            '</div>'
-        }
-      }, 10000)
-    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

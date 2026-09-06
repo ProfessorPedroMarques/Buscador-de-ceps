@@ -3,9 +3,19 @@ import SearchBar from './components/SearchBar.jsx'
 import ResultCard from './components/ResultCard.jsx'
 import HistoryPanel from './components/HistoryPanel.jsx'
 import MapModal from './components/MapModal.jsx'
+import RoutePanel from './components/RoutePanel.jsx'
+import RouteMapModal from './components/RouteMapModal.jsx'
+import SeletorOrigem from './components/SeletorOrigem.jsx'
 import ThemeToggle from './components/ThemeToggle.jsx'
 import Toast from './components/Toast.jsx'
 import { useLocalStorage } from './hooks/useLocalStorage.js'
+import { useGeolocation } from './hooks/useGeolocation.js'
+import { geocodificar, obterGeometriaRota } from './lib/api.js'
+import { formatarPreco } from './lib/transit/formato.js'
+import { GeoPoint } from './lib/transit/GeoPoint.js'
+import { PlanejadorRotas } from './lib/transit/PlanejadorRotas.js'
+import { PlanejadorViagens } from './lib/transit/PlanejadorViagens.js'
+import './styles-rota.css'
 
 const SUGESTOES = ['01001-000', '13010-100', '20040-020', '69900-062']
 
@@ -23,8 +33,27 @@ export default function App() {
   const [historico, setHistorico] = useLocalStorage('cep:historico', [])
   const [tema, setTema] = useLocalStorage('cep:tema', null)
   const [mapaAberto, setMapaAberto] = useState(false)
+  const [rotaMapaAberto, setRotaMapaAberto] = useState(false)
   const [toast, setToast] = useState(null)
   const inputRef = useRef(null)
+  const rotaRef = useRef(null)
+
+  /* Estado do planejamento de rota ("modo Moovit") */
+  const [planejamento, setPlanejamento] = useState({
+    status: 'idle', // idle | loading | ready | error
+    rotas: [],
+    indice: 0,
+    erro: '',
+    mensagem: '',
+    meta: { origemRotulo: '', destinoRotulo: '' },
+    viagens: { modos: [], distanciaViaKm: 0, interestadual: false },
+  })
+  /* Origem escolhida (GPS ou CEP manual) + seletor de origem */
+  const [origem, setOrigem] = useState(null)
+  const [seletorAberto, setSeletorAberto] = useState(false)
+  /* Pseudo-rota do carro para o mapa (quando aberto pela aba Carro) */
+  const [rotaCarroPseudo, setRotaCarroPseudo] = useState(null)
+  const { coords: coordsGeo, solicitar: pedirLocalizacao } = useGeolocation()
 
   /* Tema claro/escuro persistido (padrão: preferência do sistema) */
   useEffect(() => {
@@ -116,9 +145,187 @@ export default function App() {
     }
   }
 
-  /* Tecla Esc fecha o mapa */
+  /* Planeja rotas urbanas + viagens (rodoviária/avião/carro) a partir da origem */
+  const planejarRota = useCallback(
+    async (origemInfo) => {
+      if (!resultado) return
+      setSeletorAberto(false)
+      setPlanejamento((p) => ({
+        status: 'loading',
+        rotas: [],
+        indice: 0,
+        erro: '',
+        mensagem: 'Localizando o destino…',
+        meta: {
+          origemRotulo: origemInfo.rotulo,
+          destinoRotulo: resultado.logradouro || resultado.localidade,
+        },
+        viagens: p.viagens ?? { modos: [], distanciaViaKm: 0, interestadual: false },
+      }))
+      setTimeout(
+        () => rotaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }),
+        80,
+      )
+
+      try {
+        const geoDestino = await geocodificar({
+          logradouro: resultado.logradouro,
+          cidade: resultado.localidade,
+          uf: resultado.uf,
+        })
+        if (!geoDestino.ok) {
+          throw new Error('Não foi possível localizar as coordenadas do destino.')
+        }
+
+        const origemPonto = new GeoPoint(
+          origemInfo.ponto.lat,
+          origemInfo.ponto.lon,
+          origemInfo.rotulo,
+        )
+        const destinoPonto = new GeoPoint(
+          geoDestino.lat,
+          geoDestino.lon,
+          resultado.logradouro || resultado.localidade,
+        )
+
+        setPlanejamento((p) => ({ ...p, mensagem: 'Calculando rotas e viagens…' }))
+        const geometria = await obterGeometriaRota(origemPonto, destinoPonto)
+
+        /* Rotas urbanas (ônibus urbano / a pé) */
+        const planejador = new PlanejadorRotas({
+          origem: origemPonto,
+          destino: destinoPonto,
+          endereco: resultado,
+          geometria,
+        })
+        const { rotas, mensagem } = planejador.planejar()
+
+        /* Viagens de longo curso (rodoviária, avião, carro) */
+        const planejadorViagens = new PlanejadorViagens({
+          origem: origemPonto,
+          destino: destinoPonto,
+          cidadeOrigem: origemInfo.cidade,
+          ufOrigem: origemInfo.uf,
+          cidadeDestino: resultado.localidade,
+          ufDestino: resultado.uf,
+          distanciaKm: origemPonto.distanciaPara(destinoPonto),
+          geometria,
+        })
+        const viagens = planejadorViagens.planejar()
+
+        setPlanejamento({
+          status: 'ready',
+          rotas,
+          indice: 0,
+          erro: '',
+          mensagem,
+          meta: {
+            origemRotulo: origemInfo.rotulo,
+            destinoRotulo: resultado.logradouro || resultado.localidade,
+          },
+          viagens,
+        })
+        notificar(
+          viagens.modos.length
+            ? `Rota urbana + ${viagens.modos.length} modo(s) de viagem encontrados!`
+            : `${rotas.length} opções de rota encontradas!`,
+          'sucesso',
+        )
+      } catch (e) {
+        setPlanejamento({
+          status: 'error',
+          rotas: [],
+          indice: 0,
+          erro: e.message,
+          mensagem: '',
+          meta: {
+            origemRotulo: origemInfo.rotulo,
+            destinoRotulo: resultado.logradouro || '',
+          },
+          viagens: { modos: [], distanciaViaKm: 0, interestadual: false },
+        })
+        notificar(e.message, 'erro')
+      }
+    },
+    [resultado, notificar],
+  )
+
+  /* Clique em "Como chegar": usa a origem salva ou abre o seletor */
+  const abrirComoChegar = useCallback(() => {
+    if (!resultado) return
+    if (origem) {
+      planejarRota(origem)
+    } else {
+      setSeletorAberto(true)
+    }
+  }, [resultado, origem, planejarRota])
+
+  /* Origem definida no SeletorOrigem (GPS ou CEP manual) */
+  const definirOrigem = useCallback(
+    (origemInfo) => {
+      setOrigem(origemInfo)
+      setSeletorAberto(false)
+      planejarRota(origemInfo)
+    },
+    [planejarRota],
+  )
+
+  /* Mapa da rota de carro (pseudo-rota compatível com RouteMapModal) */
+  const abrirMapaCarro = useCallback(
+    (carro) => {
+      setRotaCarroPseudo({
+        etapas: [
+          {
+            tipo: 'carro',
+            pontos: carro.pontos,
+            linha: { cor: '#f59e0b', numero: 'Carro', nome: 'Rota rodoviária' },
+          },
+        ],
+        etapasOnibus: [],
+        trocas: 0,
+        tempoTexto: carro.duracaoTexto,
+        precoTexto: formatarPreco(carro.custoTotal),
+        origemRotulo: origem?.rotulo ?? 'Origem',
+        destinoRotulo: resultado?.logradouro || resultado?.localidade || 'Destino',
+      })
+      setRotaMapaAberto(true)
+    },
+    [origem, resultado],
+  )
+
+  /* Restaura la app al estado inicial (nueva búsqueda) tras una búsqueda */
+  const restaurarBusqueda = useCallback(() => {
+    setCep('')
+    setResultado(null)
+    setStatus('idle')
+    setErro('')
+    setShake(false)
+    setMapaAberto(false)
+    setRotaMapaAberto(false)
+    setSeletorAberto(false)
+    setRotaCarroPseudo(null)
+    setPlanejamento({
+      status: 'idle',
+      rotas: [],
+      indice: 0,
+      erro: '',
+      mensagem: '',
+      meta: { origemRotulo: '', destinoRotulo: '' },
+      viagens: { modos: [], distanciaViaKm: 0, interestadual: false },
+    })
+    notificar('¡Listo para una nueva búsqueda! ✈️', 'info')
+    inputRef.current?.focus()
+  }, [notificar])
+
+  /* Tecla Esc fecha os mapas */
   useEffect(() => {
-    const onKey = (e) => e.key === 'Escape' && setMapaAberto(false)
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        setMapaAberto(false)
+        setRotaMapaAberto(false)
+        setSeletorAberto(false)
+      }
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
@@ -137,7 +344,7 @@ export default function App() {
           </span>
           <div>
             <h1>Buscador de CEP</h1>
-            <p>Digite o CEP e localize o endereço no mapa</p>
+            <p>Del CEP a tu destino: ônibus municipal, metrò, tren y avión 🛫</p>
           </div>
         </div>
         <ThemeToggle tema={tema} onToggle={alternarTema} />
@@ -166,6 +373,37 @@ export default function App() {
             </svg>
             {erro}
           </p>
+        )}
+
+        {status === 'idle' && !resultado && (
+          <section className="hero-viaje" aria-label="Tu viaje empieza aquí">
+            <div className="hero-viaje__cielo" aria-hidden="true">
+              <span className="hero-sol" />
+              <span className="hero-nube hero-nube--1" />
+              <span className="hero-nube hero-nube--2" />
+              <span className="hero-nube hero-nube--3" />
+              <span className="hero-avion">✈️</span>
+            </div>
+            <div className="hero-viaje__contenido">
+              <h2 className="hero-viaje__titulo">Tu viaje empieza con un CEP 📍</h2>
+              <p className="hero-viaje__texto">
+                Escribe el <strong>CEP de tu destino</strong> y te mostraremos cómo llegar
+                en <strong>ônibus municipal o intermunicipal</strong> (con número y nombre de
+                línea), <strong>metrò o tren</strong> (estación, línea y baldeaciones) — y para
+                distancias largas, <strong>avión o carretera</strong> con enlaces reales de
+                compra en ClickBus, Buser, Google Flights y Skyscanner.
+              </p>
+              <div className="hero-pasos" aria-hidden="true">
+                <span className="hero-paso">🔍 CEP</span>
+                <i>→</i>
+                <span className="hero-paso">🚌 Ônibus municipal</span>
+                <i>→</i>
+                <span className="hero-paso">🚇 Metrò / Tren</span>
+                <i>→</i>
+                <span className="hero-paso">✈️ Avião</span>
+              </div>
+            </div>
+          </section>
         )}
 
         {status === 'idle' && !resultado && (
@@ -199,8 +437,32 @@ export default function App() {
             data={resultado}
             onCopiar={copiarEndereco}
             onVerMapa={() => setMapaAberto(true)}
+            onComoChegar={abrirComoChegar}
+            onRestaurar={restaurarBusqueda}
+            planejandoRota={planejamento.status === 'loading'}
           />
         )}
+
+        <div ref={rotaRef}>
+          {planejamento.status !== 'idle' && (
+            <RoutePanel
+              planejamento={planejamento}
+              origemRotulo={planejamento.meta.origemRotulo}
+              destinoRotulo={
+                planejamento.meta.destinoRotulo ||
+                planejamento.rotas[0]?.destinoRotulo
+              }
+              onSelecionar={(i) =>
+                setPlanejamento((p) => ({ ...p, indice: i }))
+              }
+              onAbrirMapa={() => setRotaMapaAberto(true)}
+              onTentarNovamente={abrirComoChegar}
+              onTrocarOrigem={() => setSeletorAberto(true)}
+              onRestaurar={restaurarBusqueda}
+              onVerMapaCarro={abrirMapaCarro}
+            />
+          )}
+        </div>
 
         <HistoryPanel
           historico={historico}
@@ -213,7 +475,9 @@ export default function App() {
       </main>
 
       <footer className="app__footer">
-        Dados: <strong>ViaCEP</strong> · Mapas: <strong>OpenStreetMap</strong>
+        Datos: <strong>ViaCEP</strong> · Mapas: <strong>OpenStreetMap</strong> · Rutas:{' '}
+        <strong>OSRM</strong> · Pasajes reales: <strong>Amadeus</strong> · Compra:{' '}
+        <strong>ClickBus · Buser · Google Flights · Skyscanner</strong>
       </footer>
 
       <MapModal
@@ -221,6 +485,24 @@ export default function App() {
         endereco={resultado}
         onClose={() => setMapaAberto(false)}
         notificar={notificar}
+      />
+
+      <RouteMapModal
+        aberto={rotaMapaAberto}
+        rota={rotaCarroPseudo ?? planejamento.rotas[planejamento.indice] ?? null}
+        onClose={() => {
+          setRotaMapaAberto(false)
+          setRotaCarroPseudo(null)
+        }}
+      />
+
+      <SeletorOrigem
+        aberto={seletorAberto}
+        onFechar={() => setSeletorAberto(false)}
+        onDefinir={definirOrigem}
+        notificar={notificar}
+        pedirLocalizacao={pedirLocalizacao}
+        temGps={coordsGeo}
       />
 
       <Toast toast={toast} onConcluido={() => setToast(null)} />

@@ -11,6 +11,7 @@ import cors from 'cors'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import registrarRotasPassagens from './passagens.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -178,6 +179,124 @@ app.get('/api/geocode', async (req, res) => {
     erro: 'Não foi possível localizar as coordenadas deste endereço.',
   })
 })
+
+/* ------------- Rota real via OSRM (OpenStreetMap) --------------- */
+
+app.get('/api/rota', async (req, res) => {
+  const lat1 = Number(req.query.lat1)
+  const lon1 = Number(req.query.lon1)
+  const lat2 = Number(req.query.lat2)
+  const lon2 = Number(req.query.lon2)
+
+  const validos =
+    [lat1, lon1, lat2, lon2].every(Number.isFinite) &&
+    Math.abs(lat1) <= 90 &&
+    Math.abs(lat2) <= 90 &&
+    Math.abs(lon1) <= 180 &&
+    Math.abs(lon2) <= 180
+
+  if (!validos) {
+    return res.status(400).json({ ok: false, erro: 'Coordenadas inválidas.' })
+  }
+
+  const chave = `rota:${lat1.toFixed(4)},${lon1.toFixed(4)},${lat2.toFixed(4)},${lon2.toFixed(4)}`
+  const emCache = obterCache(chave)
+  if (emCache) return res.json(emCache)
+
+  const url =
+    `https://router.project-osrm.org/route/v1/driving/` +
+    `${lon1},${lat1};${lon2},${lat2}?overview=full&geometries=geojson`
+
+  try {
+    const resposta = await fetch(url, {
+      headers: {
+        'User-Agent': 'buscador-de-cep/2.1 (projeto educacional)',
+      },
+    })
+    if (!resposta.ok) throw new Error('OSRM indisponível.')
+
+    const dados = await resposta.json()
+    const rota = dados?.routes?.[0]
+    if (!rota) throw new Error('Rota não encontrada.')
+
+    // GeoJSON vem [lon, lat] — convertemos para [lat, lon] e simplificamos
+    // a geometria para no máximo ~300 pontos (payload leve para o mapa).
+    const pontos = rota.geometry.coordinates.map(([lon, lat]) => [lat, lon])
+    const passo = Math.max(1, Math.ceil(pontos.length / 300))
+    const pontosFinais = pontos.filter(
+      (_, i) => i % passo === 0 || i === pontos.length - 1,
+    )
+
+    const resultado = {
+      ok: true,
+      distanciaKm: rota.distance / 1000,
+      duracaoMin: rota.duration / 60,
+      pontos: pontosFinais,
+    }
+    salvarCache(chave, resultado)
+    return res.json(resultado)
+  } catch {
+    // Sem rota real: devolve ok:false e o frontend usa curva sintética.
+    return res.json({ ok: false, erro: 'Serviço de rota indisponível.' })
+  }
+})
+
+/* ------------- Geocodificação reversa (Nominatim/OSM) ----------- */
+
+app.get('/api/reverse', async (req, res) => {
+  const lat = Number(req.query.lat)
+  const lon = Number(req.query.lon)
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+    return res.status(400).json({ ok: false, erro: 'Coordenadas inválidas.' })
+  }
+
+  const chave = `rev:${lat.toFixed(4)},${lon.toFixed(4)}`
+  const emCache = obterCache(chave)
+  if (emCache) return res.json(emCache)
+
+  try {
+    const url =
+      `https://nominatim.openstreetmap.org/reverse?format=json&zoom=17` +
+      `&addressdetails=1&accept-language=pt-BR&lat=${lat}&lon=${lon}`
+
+    const resposta = await fetch(url, {
+      headers: {
+        'User-Agent': 'buscador-de-cep/2.1 (projeto educacional)',
+        'Accept-Language': 'pt-BR',
+      },
+    })
+    if (!resposta.ok) throw new Error('Indisponível.')
+
+    const dados = await resposta.json()
+    const end = dados?.address ?? {}
+    const ufISO = end['ISO3166-2-lvl4'] ?? '' // ex.: "BR-SP"
+    const resultado = {
+      ok: true,
+      rotulo:
+        [
+          end.road ?? end.pedestrian ?? end.footway,
+          end.suburb ?? end.neighbourhood ?? end.quarter,
+        ]
+          .filter(Boolean)
+          .slice(0, 2)
+          .join(', ') ||
+        dados?.display_name ||
+        'Sua localização',
+      cidade:
+        end.city ?? end.town ?? end.village ?? end.municipality ?? '',
+      uf: ufISO ? ufISO.split('-')[1] : '',
+      dados: end,
+    }
+    salvarCache(chave, resultado)
+    return res.json(resultado)
+  } catch {
+    return res.json({ ok: false, erro: 'Localização reversa indisponível.' })
+  }
+})
+
+/* ------------- Passagens reais (Amadeus / gateway) ------------- */
+registrarRotasPassagens(app)
 
 /* ---------- produção: serve o build do frontend (Vite) -------- */
 

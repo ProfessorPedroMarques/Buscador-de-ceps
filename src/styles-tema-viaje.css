@@ -1,0 +1,545 @@
+/* ================================================================
+   Buscador de CEP — TEMA "VIAJE" 🌍✈️
+   Sobrescribe los tokens de styles.css, pinta el fondo como un
+   horizonte de viaje y añade: héroe animado (sol, nubes, avión),
+   búsqueda con nuevo look, interacciones extra, pasajes reales
+   (deep links a ClickBus/Buser/Google Flights/Skyscanner) y el
+   botón RESTAURAR tras cada búsqueda.
+   ================================================================ */
+
+/* ---------- 1. Tokens: amanecer sobre el mar (claro) ---------- */
+:root {
+  --bg: #e7f3ff;
+  --bg-accent: rgba(3, 105, 161, 0.10);
+  --surface: #ffffff;
+  --surface-2: #f0f7fe;
+  --text: #0f1b2d;
+  --text-muted: #5b6b85;
+  --border: #d9e5f2;
+  --accent: #0369a1;
+  --accent-strong: #075985;
+  --accent-soft: rgba(3, 105, 161, 0.14);
+  --accent-glow: hsl(204 97% 48% / 0.30);
+  --danger: #d92d20;
+  --success: #0e9f6e;
+  --oro: #f59e0b;
+  --playa: #f7b267;
+  --cielo: #a6d9ff;
+  --shadow-sm: 0 1px 2px rgba(15, 27, 45, 0.08);
+  --shadow-md: 0 10px 30px rgba(15, 27, 45, 0.12);
+  --shadow-lg: 0 24px 60px rgba(3, 105, 161, 0.2);
+}
+
+/* ---------- 2. Tokens: noche de viaje (oscuro) ---------- */
+[data-theme='dark'] {
+  --bg: #0b1220;
+  --bg-accent: rgba(56, 189, 248, 0.1);
+  --surface: #101b2e;
+  --surface-2: #172640;
+  --text: #e8f1fb;
+  --text-muted: #8aa0b8;
+  --border: #24344f;
+  --accent: #38bdf8;
+  --accent-strong: #0ea5e9;
+  --accent-soft: rgba(56, 189, 248, 0.18);
+  --accent-glow: hsl(199 93% 59% / 0.4);
+  --danger: #f97066;
+  --success: #34d399;
+  --oro: #fbbf24;
+  --playa: #f59e0b;
+  --cielo: #0b2545;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.62);
+}
+
+/* ---------- 3. Fondo "horizonte de viaje" ---------- */
+body {
+  background:
+    radial-gradient(1000px 520px at 88% -10%, var(--bg-accent), transparent 62%),
+    radial-gradient(840px 520px at -14% 110%, var(--bg-accent), transparent 60%),
+    radial-gradient(700px 400px at 50% 118%, color-mix(in srgb, var(--bg-accent) 55%, transparent), transparent 70%),
+    linear-gradient(180deg, var(--bg), color-mix(in srgb, var(--bg) 84%, var(--cielo)));
+}
+
+/* ---------- 4. Héroe animado (pantalla inicial) ---------- */
+.hero-viaje {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--cielo) 30%, var(--surface)) 0%, var(--surface) 46%, color-mix(in srgb, var(--playa) 12%, var(--surface)) 100%);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  border-radius: var(--radius);
+  padding: 22px 18px 18px;
+  box-shadow: var(--shadow-md);
+  animation: fadeUp 0.55s ease both;
+}
+
+.hero-viaje__cielo {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hero-sol {
+  position: absolute;
+  top: 14%;
+  right: 13%;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 36%, #fff6ce, color-mix(in srgb, var(--oro) 70%, #fff) 60%, transparent 130%);
+  box-shadow: 0 0 20px 6px color-mix(in srgb, var(--oro) 40%, transparent);
+  animation: solLatido 4s ease-in-out infinite;
+}
+
+.hero-nube {
+  position: absolute;
+  width: 132px;
+  height: 30px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 86%, var(--cielo));
+  opacity: 0.72;
+  filter: blur(1px);
+  animation: nubePaseo 28s linear infinite;
+}
+
+.hero-nube--1 {
+  top: 10%;
+  left: 6%;
+}
+.hero-nube--2 {
+  top: 34%;
+  left: 54%;
+  animation-duration: 38s;
+  animation-delay: -11s;
+}
+.hero-nube--3 {
+  top: 68%;
+  right: 4%;
+  width: 88px;
+  animation-duration: 22s;
+  animation-delay: -17s;
+}
+
+.hero-avion {
+  position: absolute;
+  left: -64px;
+  bottom: 30%;
+  font-size: 26px;
+  line-height: 1;
+  animation: volarHorizonte 16s linear infinite;
+  filter: drop-shadow(0 3px 8px color-mix(in srgb, var(--accent) 40%, transparent));
+}
+
+.hero-viaje__contenido {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hero-viaje__titulo {
+  font-size: 1.18rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.hero-viaje__texto {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.hero-viaje__texto strong {
+  color: var(--accent-strong);
+  font-weight: 650;
+}
+
+.hero-pasos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  margin-top: 2px;
+}
+
+.hero-paso {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--border));
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  animation: fadeUp 0.45s ease both;
+}
+
+.hero-pasos > i {
+  color: var(--text-muted);
+  font-weight: 900;
+}
+
+/* ---------- 5. Cabecera / marca ---------- */
+.app__logo {
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--success) 65%, var(--accent)));
+}
+
+.app__brand p {
+  color: var(--text-muted);
+}
+
+/* ---------- 6. Barra de búsqueda con look de viaje ---------- */
+.search {
+  background:
+    radial-gradient(600px 160px at 30% 0%, color-mix(in srgb, var(--cielo) 16%, transparent), transparent 80%),
+    linear-gradient(180deg, var(--surface), color-mix(in srgb, var(--surface) 94%, var(--cielo)));
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent), var(--shadow-md);
+}
+
+.search.is-focado {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow), var(--shadow-md);
+}
+
+.search__btn {
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 58%, var(--success)));
+}
+
+.search__btn:hover:not(:disabled) {
+  box-shadow: 0 8px 22px var(--accent-glow);
+}
+
+/* ---------- 7. Tarjeta de resultado: pasaje emisor ---------- */
+.card__topo::after {
+  content: '';
+  display: block;
+  height: 1px;
+  border-top: 2px dashed color-mix(in srgb, var(--accent) 45%, var(--border));
+  margin-top: 12px;
+}
+
+.card {
+  transition: transform var(--transicao), box-shadow var(--transicao);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn--restaurar {
+  background: linear-gradient(135deg, var(--success), color-mix(in srgb, var(--success) 55%, var(--accent)));
+  color: #fff;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--success) 34%, transparent);
+}
+
+.btn--restaurar:hover:not(:disabled) {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+/* ---------- 8. Interacciones extra ---------- */
+.sugestoes .chip:hover,
+.historico__chips .chip:hover {
+  transform: translateY(-2px) scale(1.03);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  box-shadow: var(--shadow-sm);
+}
+
+.rota-chip:hover {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+}
+
+.rota-chip.is-ativo {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: 0 6px 18px var(--accent-glow);
+}
+
+.viagem-card {
+  transition: transform var(--transicao), box-shadow var(--transicao);
+}
+
+.viagem-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ---------- 9. Selo del panel de rutas ---------- */
+.rota-panel__selo {
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 35%, transparent);
+  background: color-mix(in srgb, var(--success) 8%, transparent);
+}
+
+/* ============ 10. PASSAGENS REALES: fecha + ofertas + enlaces ============ */
+
+.viagem-fila-fecha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--border));
+  background: var(--surface-2);
+}
+
+.viagem-fecha-rotulo {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.viagem-fecha-input {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px 8px;
+  outline: none;
+}
+
+.viagem-fecha-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.btn--reales {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: linear-gradient(135deg, var(--success), color-mix(in srgb, var(--success) 55%, var(--accent)));
+  color: #fff;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-weight: 650;
+  font-size: 0.86rem;
+  box-shadow: 0 5px 16px color-mix(in srgb, var(--success) 30%, transparent);
+}
+
+.btn--reales:disabled {
+  opacity: 0.75;
+  cursor: wait;
+  filter: saturate(0.75);
+}
+
+.real-bandera {
+  display: block;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--success) 35%, transparent);
+  background: color-mix(in srgb, var(--success) 8%, var(--surface-2));
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  animation: fadeUp 0.4s ease both;
+}
+
+.real-bandera strong {
+  color: var(--success);
+}
+
+.real-bandera--aviso {
+  border-color: color-mix(in srgb, var(--oro) 40%, transparent);
+  background: color-mix(in srgb, var(--oro) 8%, var(--surface-2));
+}
+
+.oferta-real {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 12px;
+  margin-top: 10px;
+  padding: 11px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--success) 40%, transparent);
+  background: color-mix(in srgb, var(--success) 7%, var(--surface));
+  animation: fadeUp 0.4s ease both;
+}
+
+.oferta-real strong {
+  font-size: 0.92rem;
+}
+
+.oferta-real small {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.oferta-real__precio {
+  text-align: right;
+  grid-row: 1 / span 2;
+}
+
+.oferta-real__precio strong {
+  display: block;
+  font-size: 1.02rem;
+  color: var(--success);
+}
+
+.oferta-real__precio small {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* --- enlaces de compra (abren sitios reales) --- */
+.viagem-links,
+.enlaces-compra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.viagem-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  text-decoration: none;
+  transition: transform var(--transicao), box-shadow var(--transicao);
+}
+
+.viagem-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.viagem-link--compra {
+  border-color: color-mix(in srgb, var(--success) 45%, transparent);
+  background: color-mix(in srgb, var(--success) 10%, var(--surface));
+  color: var(--success);
+}
+
+.badge-vivo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #fff;
+  background: linear-gradient(135deg, var(--success), color-mix(in srgb, var(--success) 70%, var(--accent)));
+  border-radius: 999px;
+  padding: 2px 8px;
+  animation: pular 0.4s ease both;
+}
+
+/* Servicio rodoviario: número + nombre del ómnibus */
+.badge-servicio {
+  display: inline-grid;
+  place-items: center;
+  min-width: 40px;
+  padding: 2px 9px;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 800;
+  font-size: 12px;
+  line-height: 1.5;
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--success) 55%, var(--accent)));
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.servicio-nombre {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+/* ============ 11. Metrò / tren: baldeación visible ============ */
+
+.tl-baldeo {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+
+.rota-chip__modos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-height: 18px;
+}
+
+.modal-chip-modo {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+}
+
+/* ============ 12. Animaciones nuevas ============ */
+
+@keyframes volarHorizonte {
+  0% {
+    opacity: 0;
+    transform: translate(-80px, 24px) rotate(-5deg);
+  }
+  10% {
+    opacity: 1;
+  }
+  48% {
+    transform: translate(calc(100% - 10px), -20px) rotate(3deg);
+  }
+  58% {
+    opacity: 0;
+    transform: translate(calc(100% - 10px), -20px) rotate(3deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-80px, 24px) rotate(-5deg);
+  }
+}
+
+@keyframes nubePaseo {
+  0% {
+    transform: translateX(-60px);
+  }
+  100% {
+    transform: translateX(180px);
+  }
+}
+
+@keyframes solLatido {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+/* ---------- 13. Movimiento reducido ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .hero-avion,
+  .hero-nube,
+  .hero-sol {
+    animation: none;
+  }
+}

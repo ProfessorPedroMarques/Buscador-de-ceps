@@ -1,11 +1,5 @@
 import { forwardRef, useState } from 'react'
-
-const mascaraCep = (valor) => {
-  const digitos = valor.replace(/\D/g, '').slice(0, 8)
-  return digitos.length > 5
-    ? `${digitos.slice(0, 5)}-${digitos.slice(5)}`
-    : digitos
-}
+import { mascaraCep } from '../lib/api.js'
 
 function SearchBar(
   { value, onChange, onSubmit, loading, notificar },

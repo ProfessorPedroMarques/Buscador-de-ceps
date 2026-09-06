@@ -8,6 +8,12 @@ import { formatarPreco } from '../lib/transit/formato.js'
 export default function SequenciaOnibus({ etapa }) {
   const { linha } = etapa
 
+  let destinoLinha = linha.nome || ''
+  if (linha.nome && linha.nome.includes('—')) {
+    const partes = linha.nome.split('—')
+    destinoLinha = partes[partes.length - 1]?.trim() || linha.nome
+  }
+
   return (
     <>
       <p className="tl-titulo">
@@ -20,7 +26,7 @@ export default function SequenciaOnibus({ etapa }) {
       <div className="onibus-destaque">
         <span className="onibus-destaque__icone">👇</span>
         <span className="onibus-destaque__texto">
-          <strong>Pegue este ônibus</strong> — linha {linha.numero} com destino a {linha.nome.split('—').pop()?.trim() || linha.nome}
+          <strong>Pegue este ônibus</strong> — linha {linha.numero} com destino a {destinoLinha}
         </span>
       </div>
 
@@ -43,7 +49,7 @@ export default function SequenciaOnibus({ etapa }) {
       </p>
 
       <div className="chip-pagamentos" aria-label="Formas de pagamento">
-        {linha.pagamentos.map((p) => (
+        {(linha.pagamentos || []).map((p) => (
           <span key={p} className="chip-pagamento">
             {p}
           </span>

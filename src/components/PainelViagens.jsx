@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { formatarDistancia, formatarPreco } from '../lib/transit/formato.js'
 import {
-  fechaFuturaIso,
+  dataFuturaISO,
   linkGoogleFlights,
   linkSkyscanner,
   linkClickBus,
@@ -34,7 +34,7 @@ const NOMES_AEREAS = {
 export default function PainelViagens({ viagens, onVerMapaCarro }) {
   const [aba, setAba] = useState(viagens.modos[0]?.chave)
   const modo = viagens.modos.find((m) => m.chave === aba) ?? viagens.modos[0]
-  const [data, setData] = useState(() => fechaFuturaIso(7))
+  const [data, setData] = useState(() => dataFuturaISO(7))
   const [reais, setReais] = useState(null) // { estado, aviao, onibus, fonte }
   const [carregandoReais, setCarregandoReais] = useState(false)
 
@@ -104,7 +104,7 @@ export default function PainelViagens({ viagens, onVerMapaCarro }) {
           type="date"
           className="viagem-data-input"
           value={data}
-          min={fechaFuturaIso(0)}
+          min={dataFuturaISO(0)}
           onChange={(e) => {
             if (!e.target.value) return
             setData(e.target.value)

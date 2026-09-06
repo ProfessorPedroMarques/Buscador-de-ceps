@@ -104,11 +104,63 @@
         text-align: center;
         padding: 0 max(20px, env(safe-area-inset-right, 0px));
       }
+      /* Mensagem exibida se o app não conseguir montar (evita o
+         carregamento infinito quando o servidor não está de pé). */
+      .boot-erro {
+        font: 500 0.95rem/1.6 'Segoe UI', system-ui, sans-serif;
+        text-align: center;
+        padding: 24px 20px;
+        max-width: 36rem;
+        margin: 0 auto;
+      }
+      .boot-erro h2 {
+        margin: 0 0 6px;
+        font-size: 1.15rem;
+        color: #d92d20;
+      }
+      .boot-erro code {
+        background: rgb(0 0 0 / 0.07);
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+      html[data-theme='dark'] .boot-erro code {
+        background: rgb(255 255 255 / 0.12);
+      }
+      .boot-erro ul {
+        margin: 12px 0 0;
+        padding-left: 20px;
+        text-align: left;
+      }
+      .boot-erro a {
+        color: #4f46e5;
+      }
+      html[data-theme='dark'] .boot-erro a {
+        color: #a5b4fc;
+      }
     </style>
   </head>
   <body>
     <div id="root"></div>
     <noscript> Ative o JavaScript para usar o Buscador de CEP. 📮 </noscript>
+    <script>
+      /* Se o React não montar em 10 segundos, substitui o carregamento
+         infinito por uma mensagem clara com o que fazer. */
+      setTimeout(function () {
+        var raiz = document.getElementById('root')
+        if (raiz && raiz.children.length === 0) {
+          raiz.innerHTML =
+            '<div class="boot-erro" role="alert">' +
+            '<h2>A página não terminou de carregar 😕</h2>' +
+            '<p>O servidor de desenvolvimento não está respondendo. Tente:</p>' +
+            '<ul>' +
+            '<li>No terminal, rode <code>npm install</code> (apenas na primeira vez) e depois <code>npm run dev</code>.</li>' +
+            '<li>Abra <a href="http://localhost:5173">http://localhost:5173</a> no navegador.</li>' +
+            '<li>Verifique se apareceu algum erro no terminal.</li>' +
+            '</ul>' +
+            '</div>'
+        }
+      }, 10000)
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

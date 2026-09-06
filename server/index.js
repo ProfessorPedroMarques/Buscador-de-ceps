@@ -187,6 +187,25 @@ if (fs.existsSync(dist)) {
   app.get(/^(?!\/api).*/, (_req, res) =>
     res.sendFile(path.join(dist, 'index.html')),
   )
+} else {
+  // Sem build do frontend, devolve uma orientação amigável em vez
+  // do "Cannot GET /", que parece que a página "não abre".
+  app.get('/', (_req, res) =>
+    res.type('html').send(
+      `<!doctype html>
+<html lang="pt-BR">
+  <head><meta charset="utf-8" /><title>Buscador de CEP</title></head>
+  <body style="font-family:system-ui,sans-serif;max-width:36rem;margin:15vh auto;padding:0 20px;line-height:1.6">
+    <h1>📮 Buscador de CEP</h1>
+    <p>O frontend ainda não foi construído. Escolha uma opção:</p>
+    <ul>
+      <li><strong>Desenvolvimento:</strong> rode <code>npm install</code> e depois <code>npm run dev</code>, e acesse <a href="http://localhost:5173">http://localhost:5173</a>.</li>
+      <li><strong>Produção:</strong> rode <code>npm run build</code> e reinicie <code>npm start</code>.</li>
+    </ul>
+  </body>
+</html>`,
+    ),
+  )
 }
 
 app.listen(PORT, () => {

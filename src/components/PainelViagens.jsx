@@ -8,8 +8,8 @@ import {
   linkBuser,
 } from '../lib/linksCompra.js'
 
-/* Código de aerolínea (Amadeus) → nombre comercial. */
-const NOMBRES_AEREAS = {
+/* Código de companhia aérea (Amadeus) → nome comercial. */
+const NOMES_AEREAS = {
   LA: 'LATAM',
   G3: 'GOL',
   AD: 'Azul Brasil',
@@ -34,55 +34,55 @@ const NOMBRES_AEREAS = {
 export default function PainelViagens({ viagens, onVerMapaCarro }) {
   const [aba, setAba] = useState(viagens.modos[0]?.chave)
   const modo = viagens.modos.find((m) => m.chave === aba) ?? viagens.modos[0]
-  const [fecha, setFecha] = useState(() => fechaFuturaIso(7))
-  const [reales, setReales] = useState(null) // { estado, aviao, autobus, fuente }
-  const [cargandoReales, setCargandoReales] = useState(false)
+  const [data, setData] = useState(() => fechaFuturaIso(7))
+  const [reais, setReais] = useState(null) // { estado, aviao, onibus, fonte }
+  const [carregandoReais, setCarregandoReais] = useState(false)
 
   if (!viagens.modos.length) return null
 
-  const opcionAvião =
+  const opcaoAviao =
     viagens.modos.find((m) => m.chave === 'aviao')?.opcoes?.[0]
-  const opcionRodoviario =
+  const opcaoRodoviaria =
     viagens.modos.find((m) => m.chave === 'rodoviario')?.opcoes?.[0]
   const meta = viagens.metaViagem ?? {}
 
-  /* Consulta PREÇOS REALES ao backend (Amadeus para voos; gateway próprio para
+  /* Consulta PREÇOS reais ao backend (Amadeus para voos; gateway próprio para
      ônibus). Sem chaves, o backend responde { ok:false, motivo } de forma
      transparente e mostramos os enlaces oficiais de compra de cada opção. */
-  const buscarReales = useCallback(async () => {
-    setCargandoReales(true)
-    setReales({ estado: 'buscando' })
-    const r = { estado: 'listo', aviao: null, autobus: null, fuente: '' }
+  const buscarReais = useCallback(async () => {
+    setCarregandoReais(true)
+    setReais({ estado: 'buscando' })
+    const r = { estado: 'pronto', aviao: null, onibus: null, fonte: '' }
     try {
-      if (opcionAvião) {
+      if (opcaoAviao) {
         const params = new URLSearchParams({
-          origemIata: opcionAvião.iataOrigem,
-          destinoIata: opcionAvião.iataDestino,
-          data: fecha,
+          origemIata: opcaoAviao.iataOrigem,
+          destinoIata: opcaoAviao.iataDestino,
+          data,
         })
         const res = await fetch(`/api/passagens/aviao?${params}`)
         const json = await res.json()
         r.aviao = json
-        r.fuente = json?.fuente || r.fuente
+        r.fonte = json?.fonte || r.fonte
       }
-      if (opcionRodoviario) {
+      if (opcaoRodoviaria) {
         const params2 = new URLSearchParams({
           origem: meta.cidadeOrigem || '',
           destino: meta.cidadeDestino || '',
-          data: fecha,
+          data,
         })
         const res2 = await fetch(`/api/passagens/onibus?${params2}`)
         const json2 = await res2.json()
-        r.autobus = json2
-        r.fuente = r.fuente || json2?.fuente || ''
+        r.onibus = json2
+        r.fonte = r.fonte || json2?.fonte || ''
       }
-      if (!r.aviao?.ok && !r.autobus?.ok) r.estado = 'fallo'
+      if (!r.aviao?.ok && !r.onibus?.ok) r.estado = 'falha'
     } catch {
-      r.estado = 'fallo'
+      r.estado = 'falha'
     }
-    setReales(r)
-    setCargandoReales(false)
-  }, [opcionAvião, opcionRodoviario, meta.cidadeOrigem, meta.cidadeDestino, fecha])
+    setReais(r)
+    setCarregandoReais(false)
+  }, [opcaoAviao, opcaoRodoviaria, meta.cidadeOrigem, meta.cidadeDestino, data])
 
   return (
     <div className="painel-viagens">
@@ -98,27 +98,27 @@ export default function PainelViagens({ viagens, onVerMapaCarro }) {
         </span>
       </header>
 
-      <div className="viagem-fila-fecha">
-        <span className="viagem-fecha-rotulo">🗓️ Data da viagem</span>
+      <div className="viagem-fila-data">
+        <span className="viagem-data-rotulo">🗓️ Data da viagem</span>
         <input
           type="date"
-          className="viagem-fecha-input"
-          value={fecha}
+          className="viagem-data-input"
+          value={data}
           min={fechaFuturaIso(0)}
           onChange={(e) => {
             if (!e.target.value) return
-            setFecha(e.target.value)
-            setReales(null)
+            setData(e.target.value)
+            setReais(null)
           }}
           aria-label="Data da viagem para buscar passagens reais"
         />
         <button
           type="button"
-          className="btn btn--reales"
-          onClick={buscarReales}
-          disabled={cargandoReales}
+          className="btn btn--reais"
+          onClick={buscarReais}
+          disabled={carregandoReais}
         >
-          {cargandoReales ? (
+          {carregandoReais ? (
             <>
               <span className="spinner" aria-hidden="true" />
               Buscando preços reais…
@@ -130,22 +130,22 @@ export default function PainelViagens({ viagens, onVerMapaCarro }) {
         <span className="badge-vivo">dados reais</span>
       </div>
 
-      {reales?.estado === 'buscando' && (
+      {reais?.estado === 'buscando' && (
         <div className="real-bandera" role="status">
           Consultando <strong>Amadeus</strong> (voos) e o gateway de ônibus
           (ClickBus)…
         </div>
       )}
 
-      {reales?.estado === 'listo' && (
+      {reais?.estado === 'pronto' && (
         <div className="real-bandera" role="status">
-          ✅ <strong>Ofertas reais</strong> para {fecha.replace(/-/g, '/')}
-          {reales.fuente ? ` · fonte: ${reales.fuente}` : ''}. Abaixo de cada
+          ✅ <strong>Ofertas reais</strong> para {data.replace(/-/g, '/')}
+          {reais.fonte ? ` · fonte: ${reais.fonte}` : ''}. Abaixo de cada
           opção está o link oficial de compra.
         </div>
       )}
 
-      {reales?.estado === 'fallo' && (
+      {reais?.estado === 'falha' && (
         <div className="real-bandera real-bandera--aviso" role="alert">
           ⚠️ Não foi possível consultar agora. Abra os buscadores reais (
           <strong>ClickBus</strong>, <strong>Buser</strong>,{' '}
@@ -178,17 +178,17 @@ export default function PainelViagens({ viagens, onVerMapaCarro }) {
             op.modo === 'rodoviario' ? (
               <CardRodoviario key={op.empresa + i} viagem={op} atraso={i * 70} />
             ) : (
-              <CardAviao key={op.empresa + i} viagem={op} atraso={i * 70} fecha={fecha} />
+              <CardAviao key={op.empresa + i} viagem={op} atraso={i * 70} data={data} />
             ),
           )}
         </div>
       )}
 
-      {modo?.chave === 'aviao' && reales?.aviao?.ok && modo.opcoes[0] && (
-        <RealOfertasAviao ofertas={reales.aviao.ofertas} fecha={fecha} iataOrigem={modo.opcoes[0].iataOrigem} iataDestino={modo.opcoes[0].iataDestino} />
+      {modo?.chave === 'aviao' && reais?.aviao?.ok && modo.opcoes[0] && (
+        <RealOfertasAviao ofertas={reais.aviao.ofertas} data={data} iataOrigem={modo.opcoes[0].iataOrigem} iataDestino={modo.opcoes[0].iataDestino} />
       )}
-      {modo?.chave === 'rodoviario' && reales?.autobus?.ok && (
-        <RealOfertasBus ofertas={reales.autobus.ofertas} />
+      {modo?.chave === 'rodoviario' && reais?.onibus?.ok && (
+        <RealOfertasOnibus ofertas={reais.onibus.ofertas} />
       )}
 
       <p className="rota-aviso">
@@ -208,7 +208,7 @@ function Horarios({ viagem }) {
       <div className="viagem-hora">
         <span className="viagem-hora__rotulo">Partida</span>
         <strong>{viagem.partida}</strong>
-        <small>{viagem.partidaLocal}</small>
+        <small>{viagem.localPartida}</small>
       </div>
       <div className="viagem-horarios__linha" aria-hidden="true">
         <span>{viagem.duracaoTexto}</span>
@@ -220,7 +220,7 @@ function Horarios({ viagem }) {
           {viagem.chegada}
           {viagem.diaSeguinte && <em className="viagem-dia-seguinte">+1 dia</em>}
         </strong>
-        <small>{viagem.chegadaLocal}</small>
+        <small>{viagem.localChegada}</small>
       </div>
     </div>
   )
@@ -234,16 +234,16 @@ function CardRodoviario({ viagem, atraso }) {
           <strong className="viagem-card__empresa">
             🚌 {viagem.empresa}
           </strong>
-          {viagem.numeroServicio && (
+          {viagem.numeroServico && (
             <p className="viagem-onibus-embarque">
               Pegue o ônibus{' '}
-              <span className="badge-servicio" title="Número do ônibus a pegar">
-                {viagem.numeroServicio}
+              <span className="badge-servico" title="Número do ônibus a pegar">
+                {viagem.numeroServico}
               </span>
             </p>
           )}
-          {viagem.nombreServicio ? (
-            <p className="servicio-nombre">{viagem.nombreServicio}</p>
+          {viagem.nomeServico ? (
+            <p className="servico-nome">{viagem.nomeServico}</p>
           ) : (
             <p className="viagem-card__empresa-desc">{viagem.descricaoEmpresa}</p>
           )}
@@ -293,7 +293,7 @@ function CardRodoviario({ viagem, atraso }) {
   )
 }
 
-function CardAviao({ viagem, atraso, fecha }) {
+function CardAviao({ viagem, atraso, data }) {
   return (
     <article className="viagem-card" style={{ animationDelay: `${atraso}ms` }}>
       <header className="viagem-card__topo">
@@ -330,13 +330,13 @@ function CardAviao({ viagem, atraso, fecha }) {
         <span className="chip-pagamento">Cartão de crédito / PIX</span>
       </div>
 
-      <div className="enlaces-compra" aria-label="Ver precios reales y comprar vuelos">
+      <div className="enlaces-compra" aria-label="Ver precios reais y comprar vuelos">
         <a
           className="viagem-link viagem-link--compra"
           href={linkGoogleFlights({
             iataOrigem: viagem.iataOrigem,
             iataDestino: viagem.iataDestino,
-            fecha,
+            data,
           })}
           target="_blank"
           rel="noopener noreferrer"
@@ -348,7 +348,7 @@ function CardAviao({ viagem, atraso, fecha }) {
           href={linkSkyscanner({
             iataOrigem: viagem.iataOrigem,
             iataDestino: viagem.iataDestino,
-            fecha,
+            data,
           })}
           target="_blank"
           rel="noopener noreferrer"
@@ -362,9 +362,9 @@ function CardAviao({ viagem, atraso, fecha }) {
 
 /* ---------------- Ofertas REAIS do backend ---------------- */
 
-function OfertaRealAviao({ oferta, fecha, iataOrigem, iataDestino }) {
+function OfertaRealAviao({ oferta, data, iataOrigem, iataDestino }) {
   const empresa =
-    NOMBRES_AEREAS[oferta.empresa] ?? `Companhia ${oferta.empresa}`
+    NOMES_AEREAS[oferta.empresa] ?? `Companhia ${oferta.empresa}`
   return (
     <div className="oferta-real">
       <strong>
@@ -376,13 +376,13 @@ function OfertaRealAviao({ oferta, fecha, iataOrigem, iataDestino }) {
         {oferta.conexoes ? ` · ${oferta.conexoes} conexão` : ' · direto'}
       </small>
       <div className="oferta-real__preco">
-        <strong>{formatarPreco(oferta.preco)}</strong>
+        <strong>{formatarPreco(oferta.valor)}</strong>
         <small>{oferta.moeda}</small>
       </div>
       <div className="enlaces-compra">
         <a
           className="viagem-link viagem-link--compra"
-          href={linkGoogleFlights({ iataOrigem, iataDestino, fecha })}
+          href={linkGoogleFlights({ iataOrigem, iataDestino, data })}
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -390,7 +390,7 @@ function OfertaRealAviao({ oferta, fecha, iataOrigem, iataDestino }) {
         </a>
         <a
           className="viagem-link viagem-link--compra"
-          href={linkSkyscanner({ iataOrigem, iataDestino, fecha })}
+          href={linkSkyscanner({ iataOrigem, iataDestino, data })}
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -401,7 +401,7 @@ function OfertaRealAviao({ oferta, fecha, iataOrigem, iataDestino }) {
   )
 }
 
-function OfertaRealBus({ oferta }) {
+function OfertaRealOnibus({ oferta }) {
   return (
     <div className="oferta-real">
       <strong>
@@ -413,7 +413,7 @@ function OfertaRealBus({ oferta }) {
         {oferta.link && ' · preço real do site'}
       </small>
       <div className="oferta-real__preco">
-        <strong>{formatarPreco(oferta.preco)}</strong>
+        <strong>{formatarPreco(oferta.valor)}</strong>
         <small>a partir de</small>
       </div>
       <div className="enlaces-compra">
@@ -451,14 +451,14 @@ function OfertaRealBus({ oferta }) {
   )
 }
 
-function RealOfertasAviao({ ofertas, fecha, iataOrigem, iataDestino }) {
+function RealOfertasAviao({ ofertas, data, iataOrigem, iataDestino }) {
   return (
     <div role="region" aria-label="Ofertas reais de voo">
       {ofertas.map((o, i) => (
         <OfertaRealAviao
           key={`real-${i}`}
           oferta={o}
-          fecha={fecha}
+          data={data}
           iataOrigem={iataOrigem}
           iataDestino={iataDestino}
         />
@@ -467,11 +467,11 @@ function RealOfertasAviao({ ofertas, fecha, iataOrigem, iataDestino }) {
   )
 }
 
-function RealOfertasBus({ ofertas }) {
+function RealOfertasOnibus({ ofertas }) {
   return (
     <div role="region" aria-label="Ofertas reais de ônibus">
       {ofertas.map((o, i) => (
-        <OfertaRealBus key={`realbus-${i}`} oferta={o} />
+        <OfertaRealOnibus key={`realbus-${i}`} oferta={o} />
       ))}
     </div>
   )

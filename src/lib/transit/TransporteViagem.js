@@ -15,8 +15,8 @@ export class TransporteViagem {
     partida = '',
     chegada = '',
     diaSeguinte = false,
-    partidaLocal = '',
-    chegadaLocal = '',
+    localPartida = '',
+    localChegada = '',
     observacao = '',
   }) {
     if (new.target === TransporteViagem) {
@@ -32,8 +32,8 @@ export class TransporteViagem {
     this.partida = partida // "06:00"
     this.chegada = chegada // "09:45"
     this.diaSeguinte = diaSeguinte
-    this.partidaLocal = partidaLocal
-    this.chegadaLocal = chegadaLocal
+    this.localPartida = localPartida
+    this.localChegada = localChegada
     this.observacao = observacao
   }
 
@@ -55,16 +55,16 @@ export class ViagemRodoviaria extends TransporteViagem {
     assento,
     amenidades = [],
     pontosParada = 0,
-    numeroServicio = '', // número del ómnibus/servicio (p. ej. "5123")
-    nombreServicio = '', // nombre de la ruta (p. ej. "São Paulo ↔ Rio de Janeiro")
+    numeroServico = '', // número do ônibus/serviço (ex.: "5123")
+    nomeServico = '', // nome da rota (ex.: "São Paulo ↔ Rio de Janeiro")
     ...resto
   }) {
     super({ modo: 'rodoviario', ...resto })
     this.assento = assento
     this.amenidades = amenidades
     this.pontosParada = pontosParada
-    this.numeroServicio = numeroServicio
-    this.nombreServicio = nombreServicio
+    this.numeroServico = numeroServico
+    this.nomeServico = nomeServico
   }
 
   get icone() {
@@ -72,7 +72,7 @@ export class ViagemRodoviaria extends TransporteViagem {
   }
 
   get resumo() {
-    return `${this.empresa} · Ônibus ${this.numeroServicio} ${this.nombreServicio} · ${this.assento} · ${this.duracaoTexto} · ${this.valorTexto}`
+    return `${this.empresa} · Ônibus ${this.numeroServico} ${this.nomeServico} · ${this.assento} · ${this.duracaoTexto} · ${this.valorTexto}`
   }
 }
 
@@ -121,8 +121,8 @@ export class ViagemCarro extends TransporteViagem {
       duracaoMin,
       partida: 'Quando você quiser',
       chegada: 'Você define o ritmo das paradas',
-      partidaLocal: 'Sua origem',
-      chegadaLocal: 'Seu destino',
+      localPartida: 'Sua origem',
+      localChegada: 'Seu destino',
     })
     this.distanciaKm = distanciaKm
     this.custoCombustivel = custoCombustivel

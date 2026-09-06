@@ -3,6 +3,7 @@ import { formatarPreco } from '../lib/transit/formato.js'
 /**
  * Detalhe de um trecho de ônibus na timeline: linha, espera, embarque,
  * desembarque (onde descer), tarifa e formas de pagamento.
+ * Destaque para qual ônibus pegar.
  */
 export default function SequenciaOnibus({ etapa }) {
   const { linha } = etapa
@@ -10,12 +11,18 @@ export default function SequenciaOnibus({ etapa }) {
   return (
     <>
       <p className="tl-titulo">
-        Ônibus{' '}
-        <span className="badge-linha" style={{ background: linha.cor }}>
-          {linha.numero}
+        <span className="badge-linha badge-linha--grande" style={{ background: linha.cor }}>
+          🚌 {linha.numero}
         </span>{' '}
         <span className="tl-linha-nome">{linha.nome}</span>
       </p>
+
+      <div className="onibus-destaque">
+        <span className="onibus-destaque__icone">👇</span>
+        <span className="onibus-destaque__texto">
+          <strong>Pegue este ônibus</strong> — linha {linha.numero} com destino a {linha.nome.split('—').pop()?.trim() || linha.nome}
+        </span>
+      </div>
 
       <p className="tl-detalhe">
         🕐 Próximo ônibus em ~{etapa.esperaMin} min (estimado) · ≈{' '}

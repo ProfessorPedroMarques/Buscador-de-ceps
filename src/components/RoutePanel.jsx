@@ -23,8 +23,8 @@ export default function RoutePanel({
 }) {
   const { status, rotas, indice, erro, mensagem, viagens } = planejamento
   const rota = rotas[indice] ?? null
-  /* Índices de las etapas de transporte (õnibus/metrò/tren) en la lista completa
-     — sirve para marcar visualmente las BALDEACIONES entre ellas. */
+  /* Índices das etapas de transporte (ônibus/metrô/trem) na lista completa
+     — serve para marcar visualmente as BALDEAÇÕES entre elas. */
   const indicesTransporte =
     rota?.etapas
       .map((e, i) => (e.tipo === 'onibus' || e.tipo === 'trilhos') ? i : -1)
@@ -52,15 +52,15 @@ export default function RoutePanel({
               type="button"
               className="btn btn--restaurar"
               onClick={onRestaurar}
-              title="Limpiar y comenzar una nueva búsqueda"
+              title="Limpar e começar uma nova busca"
             >
-              ↺ Restaurar
+              ↺ Nova busca
             </button>
           )}
           <button type="button" className="rota-trocar-origem" onClick={onTrocarOrigem} title="Trocar a origem (GPS ou CEP manual)">
             🔄 Trocar origem
           </button>
-          <span className="rota-panel__selo" title="Linhas reais de metró/trem + estimaciones urbanas">
+          <span className="rota-panel__selo" title="Linhas reais de metrô/trem + estimativas urbanas">
             real + estimado
           </span>
         </div>
@@ -183,12 +183,12 @@ export default function RoutePanel({
                         {r.etapasOnibus.map((e, j) => (
                           <span key={`m${j}`} className="modal-chip-modo">
                             {e.tipo === 'trilhos'
-                              ? (e.linha.tipo === 'trem' ? '🚆 Tren' : '🚇 Metrò')
+                              ? (e.linha.tipo === 'trem' ? '🚆 Trem' : '🚇 Metrô')
                               : '🚌 Ônibus'}
                           </span>
                         ))}
                         {r.trocas > 0 && (
-                          <span className="modal-chip-modo">🔁 baldeación</span>
+                          <span className="modal-chip-modo">🔁 baldeação</span>
                         )}
                       </span>
                       <span className="rota-chip__meta">
@@ -254,8 +254,8 @@ export default function RoutePanel({
                             return hayBaldeo
                               ? (
                                   <span className="tl-baldeo">
-                                    🔁 Baldeación: baja del transporte y toma el
-                                    siguiente ({indicesTransporte.length - pos - 1} más)
+                                    🔁 Baldeação: desembarque deste transporte e
+                                    embarque no próximo ({indicesTransporte.length - pos - 1} à frente)
                                   </span>
                                 )
                               : null

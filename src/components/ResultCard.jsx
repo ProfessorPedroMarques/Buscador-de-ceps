@@ -78,9 +78,9 @@ export default function ResultCard({
             type="button"
             className="btn btn--restaurar"
             onClick={onRestaurar}
-            title="Limpiar el resultado y comenzar una nueva búsqueda"
+            title="Limpar o resultado e começar uma nova busca"
           >
-            ↺ Restaurar
+            ↺ Nova busca
           </button>
         )}
       </div>

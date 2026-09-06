@@ -1,10 +1,10 @@
 /* ================================================================
-   Buscador de CEP — TEMA "VIAJE" 🌍✈️
-   Sobrescribe los tokens de styles.css, pinta el fondo como un
-   horizonte de viaje y añade: héroe animado (sol, nubes, avión),
-   búsqueda con nuevo look, interacciones extra, pasajes reales
-   (deep links a ClickBus/Buser/Google Flights/Skyscanner) y el
-   botón RESTAURAR tras cada búsqueda.
+   Buscador de CEP — TEMA "VIAGEM" 🌍✈️
+   Sobrescreve os tokens de styles.css, pinta o fundo como um
+   horizonte de viagem e adiciona: herói animado (sol, nuvens, avião),
+   busca com novo visual, interações extras, passagens reais
+   (deep links a ClickBus/Buser/Google Flights/Skyscanner) e o
+   botão NOVA BUSCA após cada pesquisa.
    ================================================================ */
 
 /* ---------- 1. Tokens: amanecer sobre el mar (claro) ---------- */
@@ -62,7 +62,7 @@ body {
     linear-gradient(180deg, var(--bg), color-mix(in srgb, var(--bg) 84%, var(--cielo)));
 }
 
-/* ---------- 4. Héroe animado (pantalla inicial) ---------- */
+/* ---------- 4. Herói animado (tela inicial) ---------- */
 .hero-viaje {
   position: relative;
   overflow: hidden;
@@ -182,7 +182,7 @@ body {
   font-weight: 900;
 }
 
-/* ---------- 5. Cabecera / marca ---------- */
+/* ---------- 5. Cabeçalho / marca ---------- */
 .app__logo {
   background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--success) 65%, var(--accent)));
 }
@@ -191,7 +191,7 @@ body {
   color: var(--text-muted);
 }
 
-/* ---------- 6. Barra de búsqueda con look de viaje ---------- */
+/* ---------- 6. Barra de busca com visual de viagem ---------- */
 .search {
   background:
     radial-gradient(600px 160px at 30% 0%, color-mix(in srgb, var(--cielo) 16%, transparent), transparent 80%),
@@ -213,7 +213,7 @@ body {
   box-shadow: 0 8px 22px var(--accent-glow);
 }
 
-/* ---------- 7. Tarjeta de resultado: pasaje emisor ---------- */
+/* ---------- 7. Cartão de resultado: passagem emissora ---------- */
 .card__topo::after {
   content: '';
   display: block;
@@ -242,7 +242,7 @@ body {
   transform: translateY(-1px);
 }
 
-/* ---------- 8. Interacciones extra ---------- */
+/* ---------- 8. Interações extras ---------- */
 .sugestoes .chip:hover,
 .historico__chips .chip:hover {
   transform: translateY(-2px) scale(1.03);
@@ -269,14 +269,14 @@ body {
   box-shadow: var(--shadow-md);
 }
 
-/* ---------- 9. Selo del panel de rutas ---------- */
+/* ---------- 9. Selo do painel de rotas ---------- */
 .rota-panel__selo {
   color: var(--success);
   border-color: color-mix(in srgb, var(--success) 35%, transparent);
   background: color-mix(in srgb, var(--success) 8%, transparent);
 }
 
-/* ============ 10. PASSAGENS REALES: fecha + ofertas + enlaces ============ */
+/* ============ 10. PASSAGENS REAIS: data + ofertas + links ============ */
 
 .viagem-fila-fecha {
   display: flex;
@@ -391,7 +391,7 @@ body {
   color: var(--text-muted);
 }
 
-/* --- enlaces de compra (abren sitios reales) --- */
+/* --- links de compra (abrem sites reais) --- */
 .viagem-links,
 .enlaces-compra {
   display: flex;
@@ -441,7 +441,17 @@ body {
   animation: pular 0.4s ease both;
 }
 
-/* Servicio rodoviario: número + nombre del ómnibus */
+/* Serviço rodoviário: número + nome do ônibus */
+.viagem-onibus-embarque {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
 .badge-servicio {
   display: inline-grid;
   place-items: center;
@@ -462,7 +472,7 @@ body {
   color: var(--text);
 }
 
-/* ============ 11. Metrò / tren: baldeación visible ============ */
+/* ============ 11. Metrô / trem: baldeação visível ============ */
 
 .tl-baldeo {
   display: block;
@@ -493,7 +503,7 @@ body {
   color: var(--text-muted);
 }
 
-/* ============ 12. Animaciones nuevas ============ */
+/* ============ 12. Animações novas ============ */
 
 @keyframes volarHorizonte {
   0% {
@@ -535,11 +545,45 @@ body {
   }
 }
 
-/* ---------- 13. Movimiento reducido ---------- */
+/* ---------- 13. Movimento reduzido ---------- */
 @media (prefers-reduced-motion: reduce) {
   .hero-avion,
   .hero-nube,
   .hero-sol {
     animation: none;
   }
+}
+
+/* ============ 14. DESTAQUE: QUAL ÔNIBUS PEGAR ============ */
+
+.badge-linha--grande {
+  font-size: 1rem;
+  padding: 6px 14px;
+  border-radius: 10px;
+}
+
+/* Destaque para qual ônibus pegar */
+.onibus-destaque {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 12%, transparent), color-mix(in srgb, var(--success) 10%, transparent));
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  border-radius: 10px;
+  animation: pular 0.4s ease both;
+}
+
+.onibus-destaque__icone {
+  font-size: 1.2rem;
+}
+
+.onibus-destaque__texto {
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.onibus-destaque__texto strong {
+  color: var(--accent-strong);
 }

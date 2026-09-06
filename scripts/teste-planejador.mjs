@@ -127,7 +127,7 @@ for (const c of cenariosViagem) {
     for (const op of modo.opcoes) {
       console.log(`     • ${op.resumo}`)
       console.log(
-        `       ${op.partida} → ${op.chegada}${op.diaSeguinte ? ' (+1 dia)' : ''} | ${op.partidaLocal} → ${op.chegadaLocal}`,
+        `       ${op.partida} → ${op.chegada}${op.diaSeguinte ? ' (+1 dia)' : ''} | ${op.localPartida} → ${op.localChegada}`,
       )
       if (op.modo === 'aviao' && !op.voo) {
         console.error('✗ voo sem número!')

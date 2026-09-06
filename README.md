@@ -1,10 +1,10 @@
 # 📮 Buscador de CEP
 
-Aplicação completa para consultar endereços brasileiros a partir de un CEP,
+Aplicação completa para consultar endereços brasileiros a partir de um CEP,
 **visualizá-los no mapa** e descobrir **a melhor rota de ônibus municipal,
-metrò, trem, avião ou carro a partir da sua localização** (experiência
+metrô, trem, avião ou carro a partir da sua localização** (experiência
 inspirada no Moovit), com frontend em **React**, backend próprio em
-**Node.js/Express** e tema de **viaje** 🌍✈️.
+**Node.js/Express** e tema de **viagem** 🌍✈️.
 
 ## ✨ Funcionalidades
 
@@ -27,19 +27,20 @@ inspirada no Moovit), com frontend em **React**, backend próprio em
 - 🕒 **Histórico de buscas** salvo no navegador (localStorage), clicável para reconsultar
 - 🏷️ **Sugestões de CEP** para experimentar rapidamente
 - 🌗 **Tema claro/escuro** persistido (segue a preferência do sistema por padrão)
-- 🎨 **Tema "Viaje"**: paleta amanecer/noite, héroe animado (sol, nubes, avião
-  que cruza o céu), búsqueda con novas interações e tarjetas que "levantam" ao passar
-- 🎫 **Passagens reais**: fecha de viaje + botão **"Preços reales en vivo"**
-  (Amadeus para voos quando `AMADEUS_CLIENT_ID/SECRET` estão configurados) e
-  enlaces oficiais de compra para **ClickBus**, **Buser**, **Google Flights** e
-  **Skyscanner** com origem/destino/data já preenchidos
-- 🚌 **Ônibus municipal e intermunicipal**: siempre se muestra el **número** de
-  la línea (badge coloreado) e el **nombre**; en las rodoviarias, número de
-  servicio + nombre de la ruta
-- 🚇 **Metrò/trem**: estación de embarque e desembarque, línea (número-nome-cor),
-  operadora y aviso visual de **baldeación** cuando há que fazer transbordo
-- ↺ **Restaurar**: tras cada búsqueda, un botón vuelve la app a la pantalla
-  inicial para comenzar una nueva consulta
+- 🎨 **Tema "Viagem"**: paleta amanhecer/noite, herói animado (sol, nuvens, avião
+  que cruza o céu), busca com novas interações e cartões que "levantam" ao passar
+- 🎫 **Passagens reais**: data da viagem + botão **"Preços reais ao vivo"**
+  (Amadeus para voos quando `AMADEUS_CLIENT_ID/SECRET` estão configurados;
+  para ônibus, scraping da página pública da ClickBus e enlaces oficiais de
+  compra para **ClickBus**, **Buser**, **Google Flights** e **Skyscanner**
+  com origem/destino/data já preenchidos
+- 🚌 **Ônibus municipal e intermunicipal**: sempre mostra o **número** da
+  linha (badge colorido) e o **nome**; nas rodoviárias, número do
+  serviço + nome da rota
+- 🚇 **Metrô/trem**: estação de embarque e desembarque, linha (número-nome-cor),
+  operadora e aviso visual de **baldeação** quando há transbordo
+- ↺ **Nova busca**: após cada busca, um botão volta o app à tela
+  inicial para começar uma nova consulta
 - 🔔 **Toasts** de feedback para cada ação
 - 💫 **Transições e microinterações**: skeleton de carregamento, entrada em cascata
   dos resultados, animação de *shake* em erros, modal com *backdrop blur*
@@ -73,14 +74,14 @@ Ao consultar um CEP, o botão **"Como chegar"** aciona o planejador:
 ### O que cada aba mostra
 
 - 🚌 **Rodoviária**: empresas de viação reais conhecidas (Cometa, Penha, 1001, Gontijo…),
-  **número de servicio** e **nombre de la ruta** (p. ej. `S5123 · São Paulo ↔ Rio`),
+  **número do serviço** e **nome da rota** (p. ex. `5123 · São Paulo ↔ Rio`),
   tipo de assento (Executivo/Semi-leito/Leito-cama), amenidades, **horário de partida e
   chegada** (com marcação "+1 dia" quando cruza a meia-noite), terminais, **valor por pessoa**
-  e botões de compra **ClickBus**/**Buser** (precios reales en el site oficial);
+  e botões de compra **ClickBus**/**Buser** (preços reais no site oficial);
 - ✈️ **Avião**: companhias (LATAM/GOL/Azul), **número do voo**, aeroportos reais com
   código IATA (CGH, GRU, BSB, SSA, CWB…), partida/chegada, voo direto ou 1 conexão,
   **valor "a partir de"** e bagagem de mão incluída; cada opção tem botões
-  **Google Flights**/**Skyscanner** que abren el buscador real con ruta y fecha ya cargadas;
+  **Google Flights**/**Skyscanner** que abrem o buscador real com rota e data já carregadas;
 - 🚗 **Carro**: duração real (OSRM), distância e **custo estimado de combustível
   (12 km/L) + pedágios**, inclusive dividido por 4 pessoas — com rota no mapa.
 

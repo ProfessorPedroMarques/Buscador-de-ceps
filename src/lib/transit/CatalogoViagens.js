@@ -206,15 +206,15 @@ export class CatalogoViagens {
         assento: config.tipo,
         amenidades: config.amenidades,
         pontosParada: Math.floor(distanciaViaKm / 250),
-        numeroServicio: `S${5000 + (h % 950)}`, // número del ómnibus/servicio
-        nombreServicio: `${origem} ↔ ${destino}`, // nombre de la ruta
+        numeroServico: String(4000 + (h % 6000)), // número do ônibus/serviço a pegar
+        nomeServico: `${origem} ↔ ${destino}`, // nome da rota
         valor,
         duracaoMin: duracao,
         partida,
         chegada: minParaHora(chegadaMin),
         diaSeguinte: chegadaMin >= 1440,
-        partidaLocal: `Terminal Rodoviário de ${origem}`,
-        chegadaLocal: `Terminal Rodoviário de ${destino}`,
+        localPartida: `Terminal Rodoviário de ${origem}`,
+        localChegada: `Terminal Rodoviário de ${destino}`,
       })
     })
   }
@@ -264,8 +264,8 @@ export class CatalogoViagens {
         partida,
         chegada: minParaHora(chegadaMin),
         diaSeguinte: chegadaMin >= 1440,
-        partidaLocal: `Aeroporto ${apOrigem.nome} — ${apOrigem.iata}`,
-        chegadaLocal: `Aeroporto ${apDestino.nome} — ${apDestino.iata}`,
+        localPartida: `Aeroporto ${apOrigem.nome} — ${apOrigem.iata}`,
+        localChegada: `Aeroporto ${apDestino.nome} — ${apDestino.iata}`,
       })
     })
   }
